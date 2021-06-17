@@ -1,0 +1,38 @@
+name: build
+
+on:
+  push:
+    branches:
+      - *
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        foo: ["bar", "baz"]
+
+    steps:
+      - run: echo ${{ matrix.foo }} - ${{ github.ref }}
+      - if: ${{ matrix.foo == "baz"" }}
+        run: exit 1
+
+  test-success:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+
+    needs: test
+    steps:
+      - if: ${{ needs.build.result != 'success' }}
+        run: exit 1
+
+  publish-staging:
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: echo "Publishing to staging - ${{ github.ref }}"
+
+
+
