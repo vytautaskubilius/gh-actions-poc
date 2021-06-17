@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        foo: ["bar", "bad"]
+        foo: ["bar", "baz"]
 
     steps:
       - run: echo ${{ matrix.foo }} - ${{ github.sha }}
