@@ -22,14 +22,15 @@ jobs:
   test-success:
     runs-on: ubuntu-latest
     if: ${{ always() }}
-
     needs: test
+
     steps:
       - if: ${{ needs.build.result != 'success' }}
         run: exit 1
 
   publish-staging:
     runs-on: ubuntu-latest
+    needs: test-success
 
     steps:
       - run: echo "Publishing to staging - ${{ github.ref }}"
