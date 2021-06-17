@@ -25,7 +25,7 @@ jobs:
     needs: test
 
     steps:
-      - if: ${{ needs.build.result != 'success' }}
+      - if: ${{ needs.test.result != 'success' }}
         run: exit 1
 
   publish-staging:
