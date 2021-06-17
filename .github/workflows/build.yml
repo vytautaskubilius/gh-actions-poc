@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - run: echo ${{ matrix.foo }} - ${{ github.ref }}
-      - if: ${{ matrix.foo == "baz"" }}
+      - if: ${{ matrix.foo == 'baz' }}
         run: exit 1
 
   test-success:
