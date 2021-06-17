@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: echo "Publishing to production - ${{ github.ref }} - ${{ github.event.release.tag_name }}"
+      - run: echo "Publishing to production - ${{ github.sha }} - ${{ github.event.release.tag_name }}"
 
 
   update:
@@ -19,4 +19,4 @@ jobs:
     needs: publish-production
 
     steps:
-      - run: echo "Updating things after publish - ${{ github.ref }} - ${{ github.event.release.tag_name }}"
+      - run: echo "Updating things after publish - ${{ github.sha }} - ${{ github.event.release.tag_name }}"

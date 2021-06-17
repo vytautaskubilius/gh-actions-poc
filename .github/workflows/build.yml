@@ -15,7 +15,7 @@ jobs:
         foo: ["bar", "baz"]
 
     steps:
-      - run: echo ${{ matrix.foo }} - ${{ github.ref }}
+      - run: echo ${{ matrix.foo }} - ${{ github.sha }}
       - if: ${{ matrix.foo == 'baz' }}
         run: exit 1
 
@@ -33,7 +33,7 @@ jobs:
     needs: test-success
 
     steps:
-      - run: echo "Publishing to staging - ${{ github.ref }}"
+      - run: echo "Publishing to staging - ${{ github.sha }}"
 
 
 
