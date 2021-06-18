@@ -13,8 +13,6 @@ jobs:
       matrix:
         foo: ["bar", "bad"]
 
-    if: ${{ 1 == 0 }}
-
     steps:
       - run: echo ${{ matrix.foo }} - ${{ github.sha }}
       - if: ${{ matrix.foo == 'baz' }}
