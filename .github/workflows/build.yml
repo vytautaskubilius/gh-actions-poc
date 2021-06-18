@@ -13,6 +13,8 @@ jobs:
       matrix:
         foo: ["bar", "bad"]
 
+    if: ${{ 1 == 0 }}
+
     steps:
       - run: echo ${{ matrix.foo }} - ${{ github.sha }}
       - if: ${{ matrix.foo == 'baz' }}
@@ -24,7 +26,7 @@ jobs:
     needs: test
 
     steps:
-      - if: ${{ needs.test.result != 'success' }}
+      - if: ${{ needs.test.result == 'failure' }}
         run: exit 1
 
   publish-staging:
