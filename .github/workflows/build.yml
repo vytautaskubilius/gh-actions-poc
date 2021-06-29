@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
         echo "Publishing to staging - ${{ github.sha }}"
-        cat README.md
+        ls
 
 
 
