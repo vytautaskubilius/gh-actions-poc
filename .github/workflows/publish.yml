@@ -14,8 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: |
-        echo "Publishing to production - ${{ github.sha }} - ${{ github.event.release.tag_name }}"
-        ls
+          echo "Publishing to production - ${{ github.sha }} - ${{ github.event.release.tag_name }}"
+          cat README.md
 
 
   update:
