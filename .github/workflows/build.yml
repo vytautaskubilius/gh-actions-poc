@@ -32,7 +32,10 @@ jobs:
     needs: test-success
 
     steps:
-      - run: echo "Publishing to staging - ${{ github.sha }}"
+      - uses: actions/checkout@v2
+      - run: |
+        echo "Publishing to staging - ${{ github.sha }}"
+        echo README.md
 
 
 
