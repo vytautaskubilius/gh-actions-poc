@@ -30,6 +30,7 @@ jobs:
   publish-staging:
     runs-on: ubuntu-latest
     needs: test-success
+    environment: staging
 
     steps:
       - uses: actions/checkout@v2
