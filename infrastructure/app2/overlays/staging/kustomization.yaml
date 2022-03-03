@@ -5,6 +5,6 @@ resources:
 - ../../base
 
 images:
-- digest: sha256:528fae678b675eae389a4b00c97479f8fcd86a7a1fcbcfe978b024db352dce1c
+- digest: sha256:e9d09c96481d8ebf66c2e48cd6bbcc7ddac38bbea3d3e949005bb07a44c4ce07
   name: app2
   newName: 460665430878.dkr.ecr.us-east-1.amazonaws.com/app2-staging
