@@ -146,11 +146,11 @@ jobs:
           token: ${{ secrets.MACHINE_USER_PAT }}
           committer: ABP SRE BOT <abp-sre@imperva.com>
           author: ABP SRE BOT <abp-sre@imperva.com>
-          commit-message: Releases ${{ matrix.application }} container image to the K8s cluster.
+          commit-message: Releases ${{ matrix.application }} container image to the ${{ needs.identify-environment.outputs.environment }} K8s cluster.
           branch: releases-${{ needs.identify-environment.outputs.environment }}/${{ matrix.application }}-${{ github.sha }}
-          title: Releases ${{ matrix.application }} image digest ${{ env.IMAGE_DIGEST }}.
+          title: Releases ${{ matrix.application }} image digest ${{ env.IMAGE_DIGEST }} to ${{ needs.identify-environment.outputs.environment }}.
           body: |
-            This PR was created by the CI/CD workflow to automatically update the **${{ matrix.application }}** image digest with a new release.
+            This PR was created by the CI/CD workflow to automatically update the ${{ needs.identify-environment.outputs.environment }} **${{ matrix.application }}** image digest with a new release.
 
       - name: Enable Pull Request auto-merge
         if: steps.create-pr.outputs.pull-request-operation == 'created'
