@@ -6,7 +6,5 @@ resources:
 
 images:
 - digest: none
-  name: animation-manager
-  newName: 460665430878.dkr.ecr.us-east-1.amazonaws.com/app2-staging
-- digest: sha256:e0636d59abfa58a228dec26ef458ef83af6c712cfeaee612d9b04d3a94ca3738
   name: app2
+  newName: 460665430878.dkr.ecr.us-east-1.amazonaws.com/app2-staging
