@@ -8,3 +8,5 @@ images:
 - digest: none
   name: animation-manager
   newName: 460665430878.dkr.ecr.us-east-1.amazonaws.com/app1-staging
+- digest: sha256:8b3b67897df7dea57dc618f173bc5f7a54ca548b7afa86a1fe2eb12f167d926c
+  name: app1
