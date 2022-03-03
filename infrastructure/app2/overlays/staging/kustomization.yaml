@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- ../../base
+
+images:
+- digest: none
+  name: animation-manager
+  newName: 460665430878.dkr.ecr.us-east-1.amazonaws.com/app2-staging
