@@ -1,0 +1,179 @@
+name: cicd
+
+on:
+  push:
+    branches:
+      - "**"
+  release:
+    types:
+      - "published"
+
+jobs:
+  # Determine which environment the action should be targeting
+  identify-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.identify.outputs.environment }}
+    steps:
+      - id: identify
+        run: |
+          if [[ $GITHUB_EVENT_NAME == 'release' ]] || [[ $GITHUB_REF_NAME == releases-production* ]]; then
+              echo "::set-output name=environment::production"
+          else
+              echo "::set-output name=environment::staging"
+          fi
+
+  # Evaluate if applications codebase and kubernetes manifests have changed
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      applications: ${{ steps.applications-filter.outputs.changes }}
+      manifests: ${{ steps.manifests-filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dorny/paths-filter@v2
+        id: applications-filter
+        with:
+          filters: |
+            app1:
+              - 'app1/Dockerfile'
+            app2:
+              - 'app2/Dockerfile'
+      - uses: dorny/paths-filter@v2
+        id: manifests-filter
+        with:
+          filters: |
+            app1:
+              - 'infrastructure/app1/**'
+            app2:
+              - 'infrastructure/app2/**'
+
+  # Build images and publish to Amazon ECR
+  build-and-publish:
+    needs: [identify-environment, changes]
+    strategy:
+      fail-fast: false
+      matrix:
+        application: ${{ fromJSON(needs.changes.outputs.applications) }}
+    # Job should only run if there are changes to the backend applications.
+    # The matrix job will fail if the matrix is empty.
+    if: ${{ needs.changes.outputs.applications != '[]' }}
+
+    runs-on: ubuntu-latest
+    environment: ${{ needs.identify-environment.outputs.environment }}
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      # The build image and puslish image steps rely on the preinstalled Podman that comes with GitHub Actions Runner
+      # Reference: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu1804-Readme.md
+      - name: Build container image
+        run: |
+          podman build -t ${{ steps.login-ecr.outputs.registry }}/${{ matrix.application }}-${{ needs.identify-environment.outputs.environment }}:${{ github.sha }} ./${{ matrix.application }}
+
+      - name: Publish image to Amazon ECR
+        if: github.ref_name == 'main'
+        run: |
+          podman push ${{ steps.login-ecr.outputs.registry }}/${{ matrix.application }}-${{ needs.identify-environment.outputs.environment }}:${{ github.sha }}
+
+  # Update manifests with the new images' digest
+  # This job relies on the preinstalled Kustomize that comes with GitHub Actions Runner
+  # Reference: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu1804-Readme.md
+  deploy:
+    needs: [identify-environment, changes, build-and-publish]
+    strategy:
+      fail-fast: false
+      matrix:
+        application: ${{ fromJSON(needs.changes.outputs.applications) }}
+    # Job should only run if there are changes to the backend applications and push comes from the main branch.
+    # The matrix job will fail if the matrix is empty.
+    if: github.ref_name == 'main' && needs.changes.outputs.applications != '[]'
+
+    runs-on: ubuntu-latest
+    environment: ${{ needs.identify-environment.outputs.environment }}
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Set shared environment variables
+        id: env
+        run: |
+          echo "IMAGE_DIGEST=$(aws ecr describe-images --region=us-east-1 --repository-name ${{ matrix.application }}-${{ needs.identify-environment.outputs.environment }} --image-ids imageTag=${{ github.sha }} | jq -r '.imageDetails[0].imageDigest')" >> $GITHUB_ENV
+
+      - name: Update image in manifest
+        id: update-manifest
+        run: |
+          cd infrastructure/${{ matrix.application }}/overlays/${{ needs.identify-environment.outputs.environment }}
+          kustomize edit set image "${{ matrix.application }}=*@${{ env.IMAGE_DIGEST }}"
+
+      - name: Create Pull Request
+        id: create-pr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.MACHINE_USER_PAT }}
+          committer: ABP SRE BOT <abp-sre@imperva.com>
+          author: ABP SRE BOT <abp-sre@imperva.com>
+          commit-message: Releases ${{ matrix.application }} container image to the K8s cluster.
+          branch: releases-${{ needs.identify-environment.outputs.environment }}/${{ matrix.application }}-${{ github.sha }}
+          delete-branch: true
+          title: Releases ${{ matrix.application }} image digest ${{ env.IMAGE_DIGEST }}.
+          body: |
+            This PR was created by the CI/CD workflow to automatically update the **${{ matrix.application }}** image digest with a new release.
+
+      - name: Enable Pull Request auto-merge
+        if: steps.create-pr.outputs.pull-request-operation == 'created'
+        uses: peter-evans/enable-pull-request-automerge@v1
+        with:
+          token: ${{ secrets.MACHINE_USER_PAT }}
+          pull-request-number: ${{ steps.create-pr.outputs.pull-request-number }}
+          merge-method: squash
+
+  validate-manifests:
+    needs: [identify-environment, changes]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        manifest: ${{ fromJSON(needs.changes.outputs.manifests) }}
+    if: needs.changes.outputs.manifests != '[]'
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - run: kustomize build infrastructure/${{ matrix.manifest }}/overlays/${{ needs.identify-environment.outputs.environment }}
+
+  # This job tracks all the jobs in the validate matrix to allow us to set up a single protection rule
+  # on the main branch instead of individually selecting each environment's test job in the list
+  validate-success:
+    runs-on: ubuntu-latest
+    needs: validate-manifests
+    if: ${{ always() }}
+    steps:
+      - name: Fail workflow if any validation fails
+        if: ${{ needs.validate-manifests.result == 'failure' }}
+        run: |
+          echo "One or more validation failed - aborting workflow."
+          exit 1
