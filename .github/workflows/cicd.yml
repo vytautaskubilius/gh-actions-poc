@@ -84,7 +84,7 @@ jobs:
           podman build -t ${{ steps.login-ecr.outputs.registry }}/${{ matrix.application }}-${{ needs.identify-environment.outputs.environment }}:${{ github.sha }} ./${{ matrix.application }}
 
       - name: Publish image to Amazon ECR
-        if: github.ref_name == 'main'
+        if: github.ref_name == 'main' || github.event_name == 'release'
         run: |
           podman push ${{ steps.login-ecr.outputs.registry }}/${{ matrix.application }}-${{ needs.identify-environment.outputs.environment }}:${{ github.sha }}
 
@@ -99,7 +99,7 @@ jobs:
         application: ${{ fromJSON(needs.changes.outputs.applications) }}
     # Job should only run if there are changes to the backend applications and push comes from the main branch.
     # The matrix job will fail if the matrix is empty.
-    if: github.ref_name == 'main' && needs.changes.outputs.applications != '[]'
+    if: (github.ref_name == 'main' || github.event_name == 'release') && needs.changes.outputs.applications != '[]'
 
     runs-on: ubuntu-latest
     environment: ${{ needs.identify-environment.outputs.environment }}
