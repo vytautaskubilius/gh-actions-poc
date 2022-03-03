@@ -5,6 +5,6 @@ resources:
 - ../../base
 
 images:
-- digest: sha256:c11fe0bb75affa5c26b783409f9dd85abfdf0f79a389f48c1a2c514bbb0e4422
+- digest: sha256:0f4e0ca5e7d1191128e162706e13daca2a18127d4e64e9a5c2f9fbfc061e9c0d
   name: app2
   newName: 460665430878.dkr.ecr.us-east-1.amazonaws.com/app2-production
