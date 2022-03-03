@@ -142,13 +142,12 @@ jobs:
         id: create-pr
         uses: peter-evans/create-pull-request@v3
         with:
-          base: ${{ needs.identify-environment.outputs.base }}
+          base: main
           token: ${{ secrets.MACHINE_USER_PAT }}
           committer: ABP SRE BOT <abp-sre@imperva.com>
           author: ABP SRE BOT <abp-sre@imperva.com>
           commit-message: Releases ${{ matrix.application }} container image to the K8s cluster.
           branch: releases-${{ needs.identify-environment.outputs.environment }}/${{ matrix.application }}-${{ github.sha }}
-          delete-branch: true
           title: Releases ${{ matrix.application }} image digest ${{ env.IMAGE_DIGEST }}.
           body: |
             This PR was created by the CI/CD workflow to automatically update the **${{ matrix.application }}** image digest with a new release.
