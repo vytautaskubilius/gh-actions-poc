@@ -41,7 +41,7 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: applications-filter
         with:
-          base: ${{ needs.changes.outputs.base }}
+          base: ${{ needs.identify-environment.outputs.base }}
           filters: |
             app1:
               - 'app1/Dockerfile'
@@ -50,7 +50,7 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: manifests-filter
         with:
-          base: ${{ needs.changes.outputs.base }}
+          base: ${{ needs.identify-environment.outputs.base }}
           filters: |
             app1:
               - 'infrastructure/app1/**'
