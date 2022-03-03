@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.identify.outputs.environment }}
+      base: ${{ steps.identify.outputs.base }}
     steps:
       - uses: actions/checkout@v2
         with:
