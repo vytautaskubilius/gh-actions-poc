@@ -1,2 +1,2 @@
 FROM public.ecr.aws/amazonlinux/amazonlinux:latest
-RUN echo bar2
+RUN echo bar3
