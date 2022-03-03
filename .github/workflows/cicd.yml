@@ -21,9 +21,12 @@ jobs:
           fetch-depth: 0
       - id: identify
         run: |
-          if [[ $GITHUB_EVENT_NAME == 'release' ]] || [[ $GITHUB_REF_NAME == releases-production* ]]; then
+          if [[ $GITHUB_EVENT_NAME == 'release' ]]; then
               echo "::set-output name=environment::production"
               echo "::set-output name=base::$(git tag --sort "-committerdate" | sed -n 2p)"
+          elif [[ $GITHUB_REF_NAME == releases-production* ]]; then
+              echo "::set-output name=environment::production"
+              echo "::set-output name=base::main"
           else
               echo "::set-output name=environment::staging"
               echo "::set-output name=base::main"
