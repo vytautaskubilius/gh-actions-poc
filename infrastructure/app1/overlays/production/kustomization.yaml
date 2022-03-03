@@ -5,6 +5,6 @@ resources:
 - ../../base
 
 images:
-- digest: sha256:2656b9d6f5d57343e12cfdd1099bc91a970cc41c0a3eed55f35134a8fb3a9e62
+- digest: sha256:6e1eb00f03f5c2650d5efe750edc84251617bac83c022a069d3ae7afdb9b619c
   name: app1
   newName: 460665430878.dkr.ecr.us-east-1.amazonaws.com/app1-production
