@@ -15,17 +15,23 @@ jobs:
     outputs:
       environment: ${{ steps.identify.outputs.environment }}
     steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - id: identify
         run: |
           if [[ $GITHUB_EVENT_NAME == 'release' ]] || [[ $GITHUB_REF_NAME == releases-production* ]]; then
               echo "::set-output name=environment::production"
+              echo "::set-output name=base::$(git tag --sort "-committerdate" | sed -n 2p)"
           else
               echo "::set-output name=environment::staging"
+              echo "::set-output name=base::main"
           fi
 
   # Evaluate if applications codebase and kubernetes manifests have changed
   changes:
     runs-on: ubuntu-latest
+    needs: changes
     outputs:
       applications: ${{ steps.applications-filter.outputs.changes }}
       manifests: ${{ steps.manifests-filter.outputs.changes }}
@@ -34,6 +40,7 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: applications-filter
         with:
+          base: ${{ needs.changes.outputs.base }}
           filters: |
             app1:
               - 'app1/Dockerfile'
@@ -42,6 +49,7 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: manifests-filter
         with:
+          base: ${{ needs.changes.outputs.base }}
           filters: |
             app1:
               - 'infrastructure/app1/**'
