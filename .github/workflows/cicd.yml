@@ -142,6 +142,7 @@ jobs:
         id: create-pr
         uses: peter-evans/create-pull-request@v3
         with:
+          base: ${{ needs.identify-environment.outputs.base }}
           token: ${{ secrets.MACHINE_USER_PAT }}
           committer: ABP SRE BOT <abp-sre@imperva.com>
           author: ABP SRE BOT <abp-sre@imperva.com>
