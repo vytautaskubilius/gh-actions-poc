@@ -31,7 +31,7 @@ jobs:
   # Evaluate if applications codebase and kubernetes manifests have changed
   changes:
     runs-on: ubuntu-latest
-    needs: changes
+    needs: identify-environment
     outputs:
       applications: ${{ steps.applications-filter.outputs.changes }}
       manifests: ${{ steps.manifests-filter.outputs.changes }}
