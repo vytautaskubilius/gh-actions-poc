@@ -40,15 +40,7 @@ jobs:
           base: ${{ needs.identify-environment.outputs.base }}
           filters: |
             changed:
-              - 'captcha-client/*.js'
-              - 'captcha-client/*.json'
-              - 'captcha-client/Dockerfile'
-              - 'captcha-client/docker-compose.yaml'
-              - 'captcha-client/src/**/*.ts'
-              - 'captcha-client/src/**/*.scss'
-              - 'captcha-client/**/*.html'
-              - 'captcha-client-tests/*.json'
-              - 'captcha-client-tests/**/*.js'
+              - 'app/app.txt'
 
   build-and-test:
     # Business
@@ -69,7 +61,7 @@ jobs:
           path: |
             ./app/app.txt
 
-  publish-captcha-client:
+  publish-app:
     # Upload artifacts to S3
     runs-on: ubuntu-latest
     needs: [identify-environment, changed, build-and-test]
