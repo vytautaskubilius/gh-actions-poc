@@ -16,6 +16,9 @@ jobs:
       environment: ${{ steps.identify.outputs.environment }}
       base: ${{ steps.identify.outputs.base }}
     steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - id: identify
         run: |
           if [[ $GITHUB_EVENT_NAME == 'release' ]]; then
